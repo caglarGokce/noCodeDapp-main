@@ -1,5 +1,5 @@
 use crate::error::Errors::ArithmeticError;
-use crate::state::{  RoleConfig, TheRole};
+use crate::rolestates::{  RoleConfig, TheRole};
 use crate::datastates::{ DataConfig,  TheData,};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::program:: invoke_signed;
@@ -60,6 +60,21 @@ let data: TheData = TheData::try_from_slice(&proposal_account.data.borrow())?;
   Ok(())
 }
 
+pub fn  confirm_proposal_for_modifying_data(
+  accounts: &[AccountInfo],
+  program_id:&Pubkey,
+) -> ProgramResult {
+
+let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
+
+
+let confirmer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+
+
+  Ok(())
+}
+
+
 fn create_data<'info>(
   creator:&AccountInfo<'info>,
   data_account:&AccountInfo<'info>,
@@ -106,6 +121,7 @@ fn create_data<'info>(
   bump: bump,
   data: data.data,
   fields: data_account_data.fields,
+  total_number_of_executions: Vec::new(),
   };
 
  let mut temp_slice: Vec<u8> =  Vec::new();
@@ -179,6 +195,7 @@ fn is_role_valid(
 
   if !data_config.who_can_create.contains(&the_role.hierachy_in_the_roles){panic!()}
 
+  if the_role.is_enabled != 1 {panic!()}
 
   if data_config.is_approval_by_the_creator_required_to_create != 0 {
       if the_role.approved_to_create_data != 1 {panic!()}

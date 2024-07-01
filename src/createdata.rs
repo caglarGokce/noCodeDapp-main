@@ -1,5 +1,5 @@
 use crate::error::Errors::ArithmeticError;
-use crate::state::{  RoleConfig,   TheRole};
+use crate::rolestates::{  RoleConfig,   TheRole};
 use crate::datastates::{ DataConfig,  TheData, DataStr, };
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -113,6 +113,7 @@ use solana_program::{
     last_modified_on: current_time,
     number_of_branches: 0,
     number_of_total_proposed_data: 0,
+    total_number_of_executions: Vec::new(),
     bump: bump,
     data: data.data,
     fields: data_config.initial_field_values.clone(),
@@ -181,6 +182,7 @@ use solana_program::{
     last_modified_on: current_time,
     number_of_branches: 0,
     number_of_total_proposed_data: 0,
+    total_number_of_executions: Vec::new(),
     bump: 0,
     data: data.data,
     fields: data_config.initial_field_values.clone()
@@ -284,6 +286,7 @@ use solana_program::{
 
     if !data_config.who_can_create.contains(&the_role.hierachy_in_the_roles){panic!()}
 
+    if the_role.is_enabled != 1 {panic!()}
 
     if data_config.is_approval_by_the_creator_required_to_create != 0 {
         if the_role.approved_to_create_data != 1 {panic!()}

@@ -1,17 +1,16 @@
 use crate::error::Errors::ArithmeticError;
-use crate::state::{   RoleConfig,   TheRole};
+use crate::rolestates::{   RoleConfig,   TheRole};
 use crate::datastates::{ DataConfig,  TheData,  ExecutionData, TheOrder};
 
 use crate::enums::{TheOperation,TheConditions,TheSubjects,ExeOrder};
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::program::{invoke,  invoke_signed};
+
 
 use solana_program::{
  account_info::{next_account_info, AccountInfo},
  entrypoint::ProgramResult, 
  pubkey::Pubkey, sysvar::{clock::Clock, Sysvar,},
-    system_instruction,
-  rent::Rent
+
 };
 
 
@@ -25,19 +24,16 @@ use solana_program::{
   let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
 
 
-  let creator: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+  let executor: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let data_config_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let data_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-  let parent_data_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-  let proposal_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-  let role_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-  let role_config_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+  let executor_role_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+  let executor_role_config_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
 
 
 
   if data_config_account.owner != program_id {panic!()}
-  if parent_data_account.owner != program_id {panic!()}
-  if !creator.is_signer{panic!()}
+  if !executor.is_signer{panic!()}
 
 
   let data_config: DataConfig = DataConfig::try_from_slice(&data_config_account.data.borrow())?;
@@ -45,6 +41,26 @@ use solana_program::{
 
 
   let execution_order: &TheOrder = &data_config.orders[execution_data.order_no as usize];
+  let total_number_of_executions: &u64 = &the_data.total_number_of_executions[execution_data.order_no as usize];
+  let max_number_of_order_execution: &u64 = &data_config.max_number_of_order_execution[execution_data.order_no as usize];
+
+  if total_number_of_executions >= max_number_of_order_execution{panic!()}
+
+  let clock: Clock = Clock::get()?;
+  let current_time: u64 = clock.unix_timestamp as u64;
+
+  if data_config.who_can_execute_orders[execution_data.order_no as usize].len() != 0{
+
+    let the_role: TheRole = TheRole::try_from_slice(&executor_role_account.data.borrow())?;
+
+    if data_config.who_can_execute_orders[execution_data.order_no as usize].contains(&the_role.hierachy_in_the_roles){
+      execute_with_role(executor_role_account, executor_role_config_account, &data_config, &current_time, execution_data.order_no)?;
+    }else{
+      panic!()
+    }
+
+  }
+
 
   let mut outputs:Vec<u64>=Vec::new();
   let  constants:Vec<u64>=data_config.constanst;
@@ -53,6 +69,7 @@ use solana_program::{
 
 
   let orders:Vec<ExeOrder> = process_order(execution_order);
+
 
   for order in orders {
 
@@ -221,7 +238,6 @@ use solana_program::{
 
       }
     }
-
 
   }
 
@@ -486,4 +502,69 @@ fn get_the_result(
               }
 
   return (the_result,result_subject);
+}
+
+fn execute_with_role(
+  role_account:&AccountInfo,
+  role_config_account:&AccountInfo,
+  data_config:&DataConfig,
+  current_time:&u64,
+  order_no:u8
+) -> ProgramResult {
+
+  let mut the_role: TheRole = TheRole::try_from_slice(&role_account.data.borrow())?;
+  let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
+
+  let execution_limit: u64 = role_config.number_of_limit_to_execute_orders
+  [data_config.hierachy_in_the_tree as usize]
+  [order_no as usize] ;
+
+    if execution_limit != 0{
+    
+
+      if execution_limit <= the_role.number_of_orders_executed[data_config.hierachy_in_the_tree as usize][order_no as usize]{panic!()}
+
+      the_role.number_of_orders_executed[data_config.hierachy_in_the_tree as usize][order_no as usize]
+      = the_role.number_of_orders_executed[data_config.hierachy_in_the_tree as usize][order_no as usize].checked_add(1).ok_or(ArithmeticError)?;
+
+    }
+
+
+    is_role_valid(&the_role, &role_config, data_config, current_time)?;
+
+    the_role.serialize(&mut &mut role_account.data.borrow_mut()[..])?;
+
+  Ok(())
+}
+
+
+fn is_role_valid(
+  the_role:&TheRole,
+  role_config:&RoleConfig,
+  data_config:&DataConfig,
+  current_time:&u64
+) -> ProgramResult {
+
+
+  if data_config.project_no != role_config.project_no{panic!()}
+  if data_config.project_no != the_role.project_no{panic!()}
+  if role_config.hierachy_in_the_roles != the_role.hierachy_in_the_roles{panic!()}
+
+  if !data_config.who_can_create.contains(&the_role.hierachy_in_the_roles){panic!()}
+
+  if the_role.is_enabled != 1 {panic!()}
+
+  if data_config.is_approval_by_the_creator_required_to_create != 0 {
+      if the_role.approved_to_create_data != 1 {panic!()}
+  }
+
+  if role_config.time_required_to_create != 0 {
+
+      let time_passed: u64 = current_time - the_role.last_time_created_data;
+
+      if time_passed < role_config.time_required_until_creation{panic!()}
+  }
+
+
+  Ok(())
 }

@@ -31,7 +31,7 @@ pub struct DataConfig{
     pub token_amount_needed_to_modify:u64,
     pub token_handled_after_modification:u8, // 1 - kept, 2 - sent, 3 - burnt
 
-    pub number_of_max_branches:u64,//if zero is not applied & TODO is configurable
+    pub number_of_max_branches:u64,//if zero is not applied
     pub number_of_max_versions:u64,
     //limit versions & is configurable
     //limit approved roles creation number & is configurable
@@ -41,9 +41,14 @@ pub struct DataConfig{
 
     pub orders:Vec<TheOrder>,
 
-    // nested vector represents the order indexes. parent vector represents data types(hierachy_in_the_tree). 
-    //u64 represents allowed number of modification. if zero there is no limit. 
+    // nested vector represents the roles. parent vector represents orders by index. 
+    //u8 represents the role. if zero anybody can execute. 
     pub who_can_execute_orders:Vec<Vec<u8>>,
+
+    //each index represents the order at corresponding index of orders:Vec<TheOrder>.
+    //u64 represent the limit
+    pub max_number_of_order_execution:Vec<u64>,
+
     pub bump:u8,
 
 }
@@ -61,6 +66,7 @@ pub struct TheData{
     pub last_modified_on:u64,
     pub number_of_branches:u64,
     pub number_of_total_proposed_data:u64,
+    pub total_number_of_executions:Vec<u64>,
     pub bump:u8,
     pub data:String,
     pub fields:Vec<u64>,

@@ -22,6 +22,8 @@ pub struct RoleConfig{
     pub hierachy_in_the_roles:u8,
 
     pub who_can_assign_this_role:Vec<u8>,//if empty anyone can get this
+    pub who_can_enable_this_role:Vec<u8>,//if empty noone can enable
+    pub who_can_disable_this_role:Vec<u8>,//if empty noone can disable
 
     pub time_required_to_create:u8, 
     pub time_required_until_creation:u64,
@@ -47,7 +49,7 @@ pub struct RoleConfig{
     //nested vector represents the order indexes in DataConfig - orders:Vec<TheOrder>. parent vector represents data types(hierachy_in_the_tree). 
     //u64 represents allowed number of modification. if zero there is no limit. 
     //Prevention of modification by this role is configured in data config
-    pub number_of_limits_to_execute_orders:Vec<Vec<u64>>, 
+    pub number_of_limit_to_execute_orders:Vec<Vec<u64>>, 
 
     pub bump:u8
 
@@ -76,6 +78,7 @@ pub struct TheRole{
     pub data_proposed_to_create:Vec<u64>,
     pub data_proposed_to_modify:Vec<u64>,
     pub number_of_orders_executed:Vec<Vec<u64>>,
+    pub is_enabled:u8
 }
 
 
@@ -83,4 +86,3 @@ pub struct TheRole{
 pub struct Counter{
     pub counter:u64,
 }
-

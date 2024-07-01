@@ -1,5 +1,5 @@
 use crate::error::Errors::ArithmeticError;
-use crate::state::{  RoleConfig,  TheRole};
+use crate::rolestates::{  RoleConfig,  TheRole};
 use crate::datastates::{ DataConfig,  TheData, DataStr, };
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -106,6 +106,7 @@ pub fn  modify_or_propose_modification_data(
     last_modified_on: current_time,
     number_of_branches: the_data.number_of_branches,
     number_of_total_proposed_data: the_data.number_of_total_proposed_data,
+    total_number_of_executions: the_data.total_number_of_executions.clone(),
     bump,
     data: new_data.data,
     fields,
@@ -174,6 +175,7 @@ pub fn  modify_or_propose_modification_data(
     bump: 0,
     data: data.data,
     fields: data.fields,
+    total_number_of_executions:Vec::new(),
     };
 
    let mut temp_slice: Vec<u8> =  Vec::new();
@@ -273,6 +275,8 @@ pub fn  modify_or_propose_modification_data(
     if role_config.hierachy_in_the_roles != the_role.hierachy_in_the_roles{panic!()}
 
     if !data_config.who_can_modify.contains(&the_role.hierachy_in_the_roles){panic!()}
+
+    if the_role.is_enabled != 1 {panic!()}
 
 
     if data_config.is_approval_by_the_creator_required_to_modify != 0 {

@@ -1,5 +1,5 @@
 
-use crate::state::{Counter,  RoleConfig,  TheProject, TheRole};
+use crate::rolestates::{Counter,  RoleConfig,  TheProject, TheRole};
 use crate::datastates::{ DataConfig,  TheData,  };
 
 use crate::error::Errors::ArithmeticError;
@@ -320,7 +320,8 @@ fn create_initial_data_account<'info> (
    last_modified_on: 0,
    number_of_branches: 0,
    number_of_total_proposed_data: 0,
-   bump: bump,
+    total_number_of_executions: Vec::new(),
+    bump: bump,
    data: data.data,
    fields: Vec::new()
    };
@@ -372,6 +373,7 @@ fn create_creator_role<'info>(
     data_proposed_to_create:Vec::new(),
     data_proposed_to_modify:Vec::new(),
     number_of_orders_executed: Vec::new(),
+    is_enabled:1
   };
 
    let mut temp_slice: Vec<u8> =  Vec::new();

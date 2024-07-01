@@ -1,9 +1,10 @@
 use crate::confirmdata::confirm_proposal_for_creating_data;
-use crate::createrole::create_assign_or_apply_for_a_role;
+use crate::createrole::{create_assign_or_apply_for_a_role, enable_or_disable_role};
+use crate::datafield::execute_order;
 use crate::initialize::{add_token_to_project, init_data_config, init_role_config, initialize_project_with_token, initialize_project_without_token};
 use crate::modifydata::modify_or_propose_modification_data;
-use crate::state::RoleConfig;
-use crate::datastates::{ DataConfig,  TheData, DataStr, };
+use crate::rolestates::RoleConfig;
+use crate::datastates::{ DataConfig, DataStr, ExecutionData, TheData };
 
 use borsh::BorshDeserialize;
 use solana_program::{
@@ -55,6 +56,14 @@ fn process_instruction(
       },
       8 => {
         confirm_proposal_for_creating_data(accounts, program_id)?;
+      },
+      9 => {
+        let execution_data:ExecutionData  = ExecutionData::try_from_slice(&rest)?;
+
+        execute_order(accounts, program_id,execution_data)?;
+      },
+      10 => {
+        enable_or_disable_role(accounts, program_id)?;
       },
 
 

@@ -1,5 +1,5 @@
 
-use crate::state::{  RoleApplication, RoleConfig, TheRole};
+use crate::rolestates::{  RoleApplication, RoleConfig, TheRole};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::clock::Clock;
 
@@ -29,28 +29,82 @@ pub fn  create_assign_or_apply_for_a_role(
   let role_application_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let role_owner: &AccountInfo<'_> = next_account_info(accounts_iter)?;
 
+  if creator_role_account.owner != program_id{panic!()}
   if role_config_account.owner != program_id {panic!()}
   if !role_creator.is_signer {panic!()}
 
 
   let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
+  let creator_role: TheRole = TheRole::try_from_slice(&creator_role_account.data.borrow())?;
 
   if role_config.who_can_assign_this_role.len() != 0 {
 
-  if role_config.who_can_assign_this_role.contains(&role_config.hierachy_in_the_roles){
-    assign_a_role(role_creator, creator_role_account, role_account, role_owner.key, program_id, &role_config)?;
+    if role_config.who_can_assign_this_role.contains(&creator_role.hierachy_in_the_roles){
+        assign_a_role(role_creator, &creator_role, role_account, role_owner.key, program_id, &role_config)?;
     }else{
         apply_for_a_role(role_creator,role_application_account,program_id,&role_config)?;
     }
 
   }else{
+
     create_a_role(role_creator, role_account, program_id, &role_config)?;
+
   }
 
 
     Ok(())
   }
 
+
+pub fn  enable_or_disable_role(
+    accounts: &[AccountInfo],
+    program_id:&Pubkey,
+  ) -> ProgramResult {
+
+  let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
+
+
+  let role_manager: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+  let manager_role_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+  let role_config_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+  let role_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+
+
+  if role_config_account.owner != program_id {panic!()}
+  if !role_manager.is_signer {panic!()}
+
+
+  let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
+  let mut the_role: TheRole = TheRole::try_from_slice(&role_account.data.borrow())?;
+  let manager_role: TheRole = TheRole::try_from_slice(&manager_role_account.data.borrow())?;
+
+  is_assigner_valid(role_manager.key, &manager_role, &role_config)?;
+
+  if the_role.is_enabled == 1 {
+    if role_config.who_can_disable_this_role.len() != 0{
+      if role_config.who_can_disable_this_role.contains(&manager_role.hierachy_in_the_roles){
+        the_role.is_enabled = 2;
+      }else{
+        panic!()
+      }
+    }
+  }else{
+    if role_config.who_can_enable_this_role.len() != 0{
+      if role_config.who_can_enable_this_role.contains(&manager_role.hierachy_in_the_roles){
+        the_role.is_enabled = 1;
+
+      }else{
+        panic!()
+      }
+    }
+
+  }
+
+
+  the_role.serialize(&mut &mut role_account.data.borrow_mut()[..])?;
+
+    Ok(())
+  }
 
 
 fn apply_for_a_role<'info>(
@@ -124,7 +178,8 @@ fn create_a_role<'info>(
       data_modified:Vec::new(),
       data_proposed_to_create:Vec::new(),
       data_proposed_to_modify:Vec::new(),
-        number_of_orders_executed: Vec::new(),
+      number_of_orders_executed: Vec::new(),
+      is_enabled:1
     };
   
      let mut temp_slice: Vec<u8> =  Vec::new();
@@ -161,14 +216,14 @@ fn create_a_role<'info>(
 
 fn assign_a_role<'info>(
     role_creator:&AccountInfo<'info>,
-    creator_role_account:&AccountInfo,
+    creator_role:&TheRole,
     role_account:&AccountInfo<'info>,
     role_owner:&Pubkey,
     program_id:&Pubkey,
     role_config:&RoleConfig
 ) -> ProgramResult{
 
-    is_assigner_valid(role_creator, creator_role_account, program_id, role_config)?;
+    is_assigner_valid(role_creator.key, creator_role, role_config)?;
 
     let clock: Clock = Clock::get()?;
     let current_time: u64 = clock.unix_timestamp as u64;
@@ -189,6 +244,7 @@ fn assign_a_role<'info>(
       data_proposed_to_create: Vec::new(),
       data_proposed_to_modify: Vec::new(),
       number_of_orders_executed: Vec::new(),
+      is_enabled: 1,
     };
   
      let mut temp_slice: Vec<u8> =  Vec::new();
@@ -223,20 +279,17 @@ fn assign_a_role<'info>(
 }
 
 fn is_assigner_valid(
-    role_creator:&AccountInfo,
-    creator_role_account:&AccountInfo,
-    program_id:&Pubkey,
+    role_creator:&Pubkey,
+    creator_role:&TheRole,
     role_config:&RoleConfig,
 ) -> ProgramResult{
 
 
-  let creator_role: TheRole = TheRole::try_from_slice(&creator_role_account.data.borrow())?;
 
   let creator_from_bytes: Pubkey = Pubkey::new_from_array(creator_role.user);
 
-  if &creator_from_bytes != role_creator.key {panic!()}
+  if &creator_from_bytes != role_creator {panic!()}
 
-  if creator_role_account.owner != program_id{panic!()}
 
   if creator_role.project_no != role_config.project_no{panic!()}
 
@@ -245,12 +298,14 @@ fn is_assigner_valid(
     Ok(())
 }
 
-fn enable_role()-> ProgramResult{
 
-  Ok(())
-}
 
-fn disable_role()-> ProgramResult{
 
-  Ok(())
-}
+//config
+//pub who_can_enable_this_role:Vec<u8>,//if empty noone can enable
+//pub who_can_disable_this_role:Vec<u8>,//if empty noone can disable
+//pub number_of_limit_to_execute_orders:Vec<Vec<u64>>, 
+
+//role
+//pub number_of_orders_executed:Vec<Vec<u64>>,
+
