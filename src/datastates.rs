@@ -4,6 +4,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct DataConfig{
     pub project_no:u64,
+    pub bump:u8,
     pub hierachy_in_the_tree:u8,
 
     pub who_can_create:Vec<u8>,//if empty anybody can create
@@ -49,7 +50,6 @@ pub struct DataConfig{
     //u64 represent the limit
     pub max_number_of_order_execution:Vec<u64>,
 
-    pub bump:u8,
 
 }
 

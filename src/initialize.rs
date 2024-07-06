@@ -28,13 +28,13 @@ use spl_token_2022::extension::metadata_pointer::instruction::initialize;
 
   let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
 
-  let creator: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+  let initializer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let counter_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let project_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let data_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let role_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
 
-  if !creator.is_signer{panic!()}
+  if !initializer.is_signer{panic!()}
 
   let mut counter:Counter = Counter::try_from_slice(&counter_account.data.borrow())?;
 
@@ -50,23 +50,23 @@ use spl_token_2022::extension::metadata_pointer::instruction::initialize;
 
 
   invoke_signed(&system_instruction::create_account(
-    creator.key,
+    initializer.key,
     &project_account_address,
     rent_amount, 
     80, 
     program_id), 
-    &[creator.clone(),project_account.clone()], 
+    &[initializer.clone(),project_account.clone()], 
     &[&[&seed, &[bump]]],
    )?;
 
-   create_initial_data_account(creator, data_account, program_id, project_no, data)?;
+   create_initial_data_account(initializer, data_account, program_id, project_no, data)?;
 
-   create_creator_role(creator, role_account, program_id, project_no)?;
+   create_creator_role(initializer, role_account, program_id, project_no)?;
 
 
   let project: TheProject = TheProject{
     project_no: project_no,
-    initializer: creator.key.to_bytes(),
+    initializer: initializer.key.to_bytes(),
     token_mint: [0;32],
   };
 
@@ -87,7 +87,7 @@ use spl_token_2022::extension::metadata_pointer::instruction::initialize;
 
   let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
 
-  let creator: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+  let initializer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let counter_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let project_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let project_account_ata: &AccountInfo<'_> = next_account_info(accounts_iter)?;
@@ -98,7 +98,7 @@ use spl_token_2022::extension::metadata_pointer::instruction::initialize;
   let sysvar: &AccountInfo<'_> = next_account_info(accounts_iter)?;
 
 
-  if !creator.is_signer{panic!()}
+  if !initializer.is_signer{panic!()}
 
   let mut counter:Counter = Counter::try_from_slice(&counter_account.data.borrow())?;
 
@@ -115,30 +115,30 @@ use spl_token_2022::extension::metadata_pointer::instruction::initialize;
 
 
   invoke_signed(&system_instruction::create_account(
-    creator.key,
+    initializer.key,
     &project_account_address,
     project_account_rent, 
     80, 
     program_id),
-    &[creator.clone(),project_account.clone()],&[&[&seed, &[bump]]],)?;
+    &[initializer.clone(),project_account.clone()],&[&[&seed, &[bump]]],)?;
 
-  let ix: Instruction = system_instruction::create_account(&creator.key,&token_mint.key,mint_account_rent,82,&token_2022_program.key);
+  let ix: Instruction = system_instruction::create_account(&initializer.key,&token_mint.key,mint_account_rent,82,&token_2022_program.key);
   let init_metadata_pointer: Instruction = initialize(token_2022_program.key,token_mint.key,Some(*project_account.key),Some(*token_mint.key),)?;
   let init_mint: Instruction = spl_token_2022::instruction::initialize_mint(token_2022_program.key,token_mint.key,project_account.key,Some(project_account.key),0)?;
-  let create_ata: solana_program::instruction::Instruction = create_associated_token_account(creator.key,project_account.key,token_mint.key,token_2022_program.key);
+  let create_ata: solana_program::instruction::Instruction = create_associated_token_account(initializer.key,project_account.key,token_mint.key,token_2022_program.key);
 
-  invoke(&ix,  &[creator.clone(),token_mint.clone(),token_2022_program.clone(),])?;
-  invoke(&init_metadata_pointer,  &[creator.clone(),project_account.clone(),token_mint.clone(),token_2022_program.clone(),sysvar.clone()])?;
-  invoke(&init_mint,  &[creator.clone(),project_account.clone(),token_mint.clone(),token_2022_program.clone(),sysvar.clone()])?;
-  invoke(&create_ata,&[creator.clone(),project_account_ata.clone(),project_account.clone(),token_mint.clone(),token_2022_program.clone(),sysvar.clone()])?;
+  invoke(&ix,  &[initializer.clone(),token_mint.clone(),token_2022_program.clone(),])?;
+  invoke(&init_metadata_pointer,  &[initializer.clone(),project_account.clone(),token_mint.clone(),token_2022_program.clone(),sysvar.clone()])?;
+  invoke(&init_mint,  &[initializer.clone(),project_account.clone(),token_mint.clone(),token_2022_program.clone(),sysvar.clone()])?;
+  invoke(&create_ata,&[initializer.clone(),project_account_ata.clone(),project_account.clone(),token_mint.clone(),token_2022_program.clone(),sysvar.clone()])?;
 
-  create_initial_data_account(creator, data_account, program_id, project_no, data)?;
+  create_initial_data_account(initializer, data_account, program_id, project_no, data)?;
 
-  create_creator_role(creator, role_account, program_id, project_no)?;
+  create_creator_role(initializer, role_account, program_id, project_no)?;
 
   let project: TheProject = TheProject{
     project_no: project_no,
-    initializer: creator.key.to_bytes(),
+    initializer: initializer.key.to_bytes(),
     token_mint: token_mint.key.to_bytes(),
   };
 

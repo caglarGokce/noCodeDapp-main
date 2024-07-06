@@ -5,12 +5,12 @@ import { deserialize, serialize } from "borsh";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 
-export const initialize_project_without_token = async (wallet:Keypair,initial_data:DataStr) => {//0
+export const initialize_project_without_token = async (initializer:Keypair,initial_data:DataStr) => {//0
 
   const counter_acc_info = await connection.getAccountInfo(counter);
   const counter_data  = deserialize(CounterSchema,Counter,counter_acc_info!.data);
 
-  const project_no = (counter_data.counter+1).toString()
+  const project_no = (counter_data.counter+BigInt(1)).toString()
 
   const encoded = serialize(DataStrSchema,initial_data);
 
@@ -26,12 +26,12 @@ export const initialize_project_without_token = async (wallet:Keypair,initial_da
     Buffer.from("ver"), Buffer.from("1")
     ],programId)
 
-  const role_account = PublicKey.findProgramAddressSync([Buffer.from(project_no),Buffer.from("role"),Buffer.from("1"),wallet.publicKey.toBytes()],programId)
+  const role_account = PublicKey.findProgramAddressSync([Buffer.from(project_no),Buffer.from("role"),Buffer.from("1"),initializer.publicKey.toBytes()],programId)
 
     const ix = new TransactionInstruction({
         programId:programId,
         keys:[
-            {isSigner:true,isWritable:true,pubkey:wallet.publicKey},
+            {isSigner:true,isWritable:true,pubkey:initializer.publicKey},
             {isSigner:false,isWritable:true,pubkey:counter},
             {isSigner:false,isWritable:true,pubkey:project_account[0]},
             {isSigner:false,isWritable:true,pubkey:data_account[0]},
@@ -41,17 +41,17 @@ export const initialize_project_without_token = async (wallet:Keypair,initial_da
         data:Buffer.from(concated)
     })
 
-    sendTransaction(wallet,ix,[wallet])
+    sendTransaction(initializer,ix,[initializer])
 
 }
 
-export const initialize_project_with_token = async (wallet:Keypair,initial_data:DataStr) => {//1
+export const initialize_project_with_token = async (initializer:Keypair,initial_data:DataStr) => {//1
 
 
 const counter_acc_info = await connection.getAccountInfo(counter);
 const counter_data  = deserialize(CounterSchema,Counter,counter_acc_info!.data);
 
-const project_no = (counter_data.counter+1).toString()
+const project_no = (counter_data.counter+BigInt(1)).toString()
 
 const encoded = serialize(DataStrSchema,initial_data);
 
@@ -67,7 +67,7 @@ const data_account = PublicKey.findProgramAddressSync([
   Buffer.from("ver"), Buffer.from("1")
   ],programId)
 
-const role_account = PublicKey.findProgramAddressSync([Buffer.from(project_no),Buffer.from("role"),Buffer.from("1"),wallet.publicKey.toBytes()],programId)
+const role_account = PublicKey.findProgramAddressSync([Buffer.from(project_no),Buffer.from("role"),Buffer.from("1"),initializer.publicKey.toBytes()],programId)
 
 const token_mint = Keypair.generate();
 
@@ -76,7 +76,7 @@ const project_account_ata = getAssociatedTokenAddressSync(token_mint.publicKey,p
   const ix = new TransactionInstruction({
       programId:programId,
       keys:[
-          {isSigner:true,isWritable:true,pubkey:wallet.publicKey},
+          {isSigner:true,isWritable:true,pubkey:initializer.publicKey},
           {isSigner:false,isWritable:true,pubkey:counter},
           {isSigner:false,isWritable:true,pubkey:project_account[0]},
           {isSigner:false,isWritable:true,pubkey:project_account_ata},
@@ -91,17 +91,17 @@ const project_account_ata = getAssociatedTokenAddressSync(token_mint.publicKey,p
       data:Buffer.from(concated)
   })
 
-  sendTransaction(wallet,ix,[wallet,token_mint])
+  sendTransaction(initializer,ix,[initializer,token_mint])
 
 }
 
-export const add_token_to_project = async (wallet:Keypair,project_account:PublicKey,token_mint:PublicKey) => {//2
+export const add_token_to_project = async (initalizer:Keypair,project_account:PublicKey,token_mint:PublicKey) => {//2
 
 
       const ix = new TransactionInstruction({
           programId:programId,
           keys:[
-              {isSigner:true,isWritable:true,pubkey:wallet.publicKey},
+              {isSigner:true,isWritable:true,pubkey:initalizer.publicKey},
               {isSigner:false,isWritable:true,pubkey:project_account},
               {isSigner:false,isWritable:true,pubkey:token_mint},
 
@@ -109,16 +109,16 @@ export const add_token_to_project = async (wallet:Keypair,project_account:Public
           data:Buffer.from([2])
       })
     
-      sendTransaction(wallet,ix,[wallet])
+      sendTransaction(initalizer,ix,[initalizer])
 
 }
 
 export const init_data_config = async (
-    wallet:Keypair,
+    initializer:Keypair,
     project_account:PublicKey,
     data_config:RoleConfig,
     project_no:bigint,
-    hierarchy_in_the_tree:bigint
+    hierarchy_in_the_tree:number
 ) => {//3
 
 
@@ -135,19 +135,19 @@ export const init_data_config = async (
     const ix = new TransactionInstruction({
         programId:programId,
         keys:[
-            {isSigner:true,isWritable:true,pubkey:wallet.publicKey},
+            {isSigner:true,isWritable:true,pubkey:initializer.publicKey},
             {isSigner:false,isWritable:true,pubkey:project_account},
             {isSigner:false,isWritable:true,pubkey:data_config_account[0]},
         ],
         data:Buffer.from(concated)
     })
   
-    sendTransaction(wallet,ix,[wallet])
+    sendTransaction(initializer,ix,[initializer])
 
 }
 
 export const init_role_config = async (
-    wallet:Keypair,
+    initializer:Keypair,
     project_account:PublicKey,
     role_config:RoleConfig,
     project_no:bigint,
@@ -167,23 +167,23 @@ export const init_role_config = async (
     const ix = new TransactionInstruction({
         programId:programId,
         keys:[
-            {isSigner:true,isWritable:true,pubkey:wallet.publicKey},
+            {isSigner:true,isWritable:true,pubkey:initializer.publicKey},
             {isSigner:false,isWritable:true,pubkey:project_account},
             {isSigner:false,isWritable:true,pubkey:role_config_account[0]},
         ],
         data:Buffer.from(concated)
     })
 
-    sendTransaction(wallet,ix,[wallet])
+    sendTransaction(initializer,ix,[initializer])
 
 }
 
 export const create_or_propose_creating_data = async (
-    wallet:Keypair,
+    creator:Keypair,
     data:DataStr,
     project_no:bigint,
     hierachy_in_the_roles:number,
-    hierarchy_in_the_tree:bigint,
+    hierarchy_in_the_tree:number,
     role_account:PublicKey,
     data_no:bigint,
     data_version:bigint,
@@ -209,8 +209,8 @@ export const create_or_propose_creating_data = async (
 
     const proposal_account = Keypair.generate();
 
-    const parent_hierarchy = hierarchy_in_the_tree - BigInt(1);
-    const grand_parent_hierarchy = parent_hierarchy - BigInt(1);
+    const parent_hierarchy = hierarchy_in_the_tree - 1;
+    const grand_parent_hierarchy = parent_hierarchy - 1;
 
     const data_account = PublicKey.findProgramAddressSync([
         Buffer.from(project_no.toString()),
@@ -232,7 +232,7 @@ export const create_or_propose_creating_data = async (
     const ix = new TransactionInstruction({
         programId:programId,
         keys:[
-            {isSigner:true,isWritable:true,pubkey:wallet.publicKey},
+            {isSigner:true,isWritable:true,pubkey:creator.publicKey},
             {isSigner:false,isWritable:false,pubkey:data_config_account[0]},
             {isSigner:false,isWritable:true,pubkey:data_account[0]},
             {isSigner:false,isWritable:true,pubkey:parent_data_account[0]},
@@ -244,7 +244,7 @@ export const create_or_propose_creating_data = async (
         data:Buffer.from(concated)
     })
 
-    sendTransaction(wallet,ix,[wallet])
+    sendTransaction(creator,ix,[creator])
 
 
 }
@@ -290,7 +290,7 @@ export const enable_or_disable_role = async (
     manager_role_account:PublicKey,
     role_account:PublicKey,
     project_no:bigint,
-    hierachy_in_the_roles:bigint,
+    hierachy_in_the_roles:number,
 
 ) => {//10
 
@@ -320,7 +320,7 @@ modifier:Keypair,
 data:DataStr,
 project_no:bigint,
 hierachy_in_the_roles:number,
-hierarchy_in_the_tree:bigint,
+hierarchy_in_the_tree:number,
 role_account:PublicKey,
 data_no:bigint,
 data_version:bigint,
@@ -339,7 +339,7 @@ data_version:bigint,
 
     const proposal_account = Keypair.generate();
 
-    const parent_hierarchy = hierarchy_in_the_tree - BigInt(1);
+    const parent_hierarchy = hierarchy_in_the_tree - 1;
 
     const data_account = PublicKey.findProgramAddressSync([
         Buffer.from(project_no.toString()),
@@ -378,7 +378,7 @@ export const confirm_proposal_for_creating_data = async (
     data:DataStr,
     project_no:bigint,
     hierachy_in_the_roles:number,
-    hierarchy_in_the_tree:bigint,
+    hierarchy_in_the_tree:number,
     role_account:PublicKey,
     data_no:bigint,
     data_version:bigint,
@@ -402,8 +402,8 @@ export const confirm_proposal_for_creating_data = async (
 
     const proposal_account = Keypair.generate();
 
-    const parent_hierarchy = hierarchy_in_the_tree - BigInt(1);
-    const grand_parent_hierarchy = parent_hierarchy - BigInt(1);
+    const parent_hierarchy = hierarchy_in_the_tree - 1;
+    const grand_parent_hierarchy = parent_hierarchy - 1;
 
     const data_account = PublicKey.findProgramAddressSync([
         Buffer.from(project_no.toString()),
@@ -446,7 +446,7 @@ executor:Keypair,
 execution_data:ExecutionData,
 project_no:bigint,
 hierachy_in_the_roles:number,
-hierarchy_in_the_tree:bigint,
+hierarchy_in_the_tree:number,
 executor_role_account:PublicKey,
 data_no:bigint,
 data_version:bigint,
@@ -469,7 +469,7 @@ data_version:bigint,
        Buffer.from(hierarchy_in_the_tree.toString())],programId);
 
 
-   const parent_hierarchy = hierarchy_in_the_tree - BigInt(1);
+   const parent_hierarchy = hierarchy_in_the_tree - 1;
 
    const data_account = PublicKey.findProgramAddressSync([
        Buffer.from(project_no.toString()),
@@ -497,8 +497,6 @@ data_version:bigint,
 
 }
 
-
-
 export const sendTransaction = async (wallet:Keypair,ix:TransactionInstruction,signers:Keypair[]) => {
 
 
@@ -516,4 +514,4 @@ export const sendTransaction = async (wallet:Keypair,ix:TransactionInstruction,s
 
         connection.sendTransaction(tx);
   
-  }
+}

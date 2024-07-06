@@ -1,6 +1,7 @@
 
-class RoleConfig {
+class DataConfig {
     project_no:bigint = BigInt(0);
+    bump:number = 0;
     hierachy_in_the_tree:number = 0;
     who_can_create:number[] = [];
     is_approval_by_the_creator_required_to_create:number = 0;
@@ -21,7 +22,6 @@ class RoleConfig {
     orders:TheOrder[] = [];
     who_can_execute_orders:number[][] = [];
     max_number_of_order_execution:bigint[] = [];
-    bump:number = 0;
   
   
     constructor(fields: {
@@ -345,10 +345,10 @@ class TheRole {
   }
 
 class Counter {
-    counter:number = 0;
+    counter:bigint = BigInt(0);
 
     constructor(fields: {
-        counter:number
+        counter:bigint
      } | undefined = undefined)
       {if (fields) {
         this.counter = fields.counter
@@ -356,12 +356,13 @@ class Counter {
     }
   }
 
-const RoleConfigSchema = new Map([
+const DataConfigSchema = new Map([
     [RoleConfig,
       {
         kind: "struct",
         fields: [
             ["project_no","u64"],
+            ["bump","u8"],
             ["hierachy_in_the_tree","u8"],
             ["who_can_create",["u8"]],
             ["is_approval_by_the_creator_required_to_create","u8"],
@@ -382,7 +383,6 @@ const RoleConfigSchema = new Map([
             ["orders",[TheOrder]],
             ["who_can_execute_orders",[["u8"]]],
             ["max_number_of_order_execution",["u64"]],
-            ["bump","u8"],
         ]
       }
     ]
@@ -403,7 +403,7 @@ const TheDataSchema = new Map([
     [TheData, {
         kind: 'struct',
         fields: [
-            ['creator', ['u8']],
+            ['creator', ['u8',32]],
             ['project_no', 'u64'],
             ['hierachy_in_the_tree', 'u8'],
             ['parent_no', 'u64'],
