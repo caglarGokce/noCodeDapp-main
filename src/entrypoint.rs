@@ -4,7 +4,7 @@ use crate::datafield::execute_order;
 use crate::initialize::{add_token_to_project, init_data_config, init_role_config, initialize_project_with_token, initialize_project_without_token};
 use crate::modifydata::modify_or_propose_modification_data;
 use crate::rolestates::RoleConfig;
-use crate::datastates::{ DataConfig, DataStr, ExecutionData, TheData };
+use crate::datastates::{ DataConfig, DataStr, ExecutionData };
 
 use borsh::BorshDeserialize;
 use solana_program::{
@@ -25,11 +25,11 @@ fn process_instruction(
 
     Ok(match tag{
       0 => {
-        let data: TheData = TheData::try_from_slice(&rest)?;
+        let data: DataStr = DataStr::try_from_slice(&rest)?;
         initialize_project_without_token(accounts, program_id, data)?;
       },
       1 => {
-        let data: TheData = TheData::try_from_slice(&rest)?;
+        let data: DataStr = DataStr::try_from_slice(&rest)?;
         initialize_project_with_token(accounts, program_id, data)?;
       },
       2 => {

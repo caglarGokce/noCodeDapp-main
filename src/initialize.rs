@@ -1,6 +1,6 @@
 
 use crate::rolestates::{Counter,  RoleConfig,  TheProject, TheRole};
-use crate::datastates::{ DataConfig,  TheData,  };
+use crate::datastates::{ DataConfig, DataStr, TheData  };
 
 use crate::error::Errors::ArithmeticError;
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -23,7 +23,7 @@ use spl_token_2022::extension::metadata_pointer::instruction::initialize;
   pub fn  initialize_project_without_token(
     accounts: &[AccountInfo],
     program_id:&Pubkey,
-    data: TheData
+    data: DataStr
   ) -> ProgramResult {
 
   let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
@@ -82,7 +82,7 @@ use spl_token_2022::extension::metadata_pointer::instruction::initialize;
   pub fn  initialize_project_with_token(
     accounts: &[AccountInfo],
     program_id:&Pubkey,
-    data: TheData
+    data: DataStr
   ) -> ProgramResult {
 
   let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
@@ -302,7 +302,7 @@ fn create_initial_data_account<'info> (
   data_account:&AccountInfo<'info>,
   program_id:&Pubkey,
   project_no:u64,
-  data:TheData
+  data:DataStr
 ) -> ProgramResult {
 
   let seed = get_seed();

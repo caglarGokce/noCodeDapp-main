@@ -23,14 +23,11 @@ use solana_program::{
 
   let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.iter();
 
-
   let executor: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let data_config_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let data_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let executor_role_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
   let executor_role_config_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
-
-
 
   if data_config_account.owner != program_id {panic!()}
   if !executor.is_signer{panic!()}
