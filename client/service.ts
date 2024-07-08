@@ -41,7 +41,16 @@ export const initialize_project_without_token = async (initializer:Keypair,initi
         data:Buffer.from(concated)
     })
 
-    sendTransaction(initializer,ix,[initializer])
+    const message = new TransactionMessage({
+        instructions: [ix],
+          payerKey: initializer.publicKey!,
+          recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+        }).compileToV0Message();
+    
+        const tx = new VersionedTransaction(message);
+  
+
+        tx.sign([initializer]);
 
 }
 
@@ -91,17 +100,26 @@ const project_account_ata = getAssociatedTokenAddressSync(token_mint.publicKey,p
       data:Buffer.from(concated)
   })
 
-  sendTransaction(initializer,ix,[initializer,token_mint])
+  const message = new TransactionMessage({
+    instructions: [ix],
+      payerKey: initializer.publicKey!,
+      recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+    }).compileToV0Message();
+
+    const tx = new VersionedTransaction(message);
+
+
+    tx.sign([initializer,token_mint]);
 
 }
 
-export const add_token_to_project = async (initalizer:Keypair,project_account:PublicKey,token_mint:PublicKey) => {//2
+export const add_token_to_project = async (initializer:Keypair,project_account:PublicKey,token_mint:PublicKey) => {//2
 
 
       const ix = new TransactionInstruction({
           programId:programId,
           keys:[
-              {isSigner:true,isWritable:true,pubkey:initalizer.publicKey},
+              {isSigner:true,isWritable:true,pubkey:initializer.publicKey},
               {isSigner:false,isWritable:true,pubkey:project_account},
               {isSigner:false,isWritable:true,pubkey:token_mint},
 
@@ -109,7 +127,16 @@ export const add_token_to_project = async (initalizer:Keypair,project_account:Pu
           data:Buffer.from([2])
       })
     
-      sendTransaction(initalizer,ix,[initalizer])
+      const message = new TransactionMessage({
+        instructions: [ix],
+          payerKey: initializer.publicKey!,
+          recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+        }).compileToV0Message();
+    
+        const tx = new VersionedTransaction(message);
+  
+
+        tx.sign([initializer]);
 
 }
 
@@ -142,7 +169,16 @@ export const init_data_config = async (
         data:Buffer.from(concated)
     })
   
-    sendTransaction(initializer,ix,[initializer])
+    const message = new TransactionMessage({
+        instructions: [ix],
+          payerKey: initializer.publicKey!,
+          recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+        }).compileToV0Message();
+    
+        const tx = new VersionedTransaction(message);
+  
+
+        tx.sign([initializer]);
 
 }
 
@@ -174,7 +210,19 @@ export const init_role_config = async (
         data:Buffer.from(concated)
     })
 
-    sendTransaction(initializer,ix,[initializer])
+    const message = new TransactionMessage({
+        instructions: [ix],
+          payerKey: initializer.publicKey!,
+          recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+        }).compileToV0Message();
+    
+        const tx = new VersionedTransaction(message);
+  
+
+        tx.sign([initializer]);
+  
+
+        connection.sendTransaction(tx);
 
 }
 
@@ -244,7 +292,20 @@ export const create_or_propose_creating_data = async (
         data:Buffer.from(concated)
     })
 
-    sendTransaction(creator,ix,[creator])
+    
+    const message = new TransactionMessage({
+        instructions: [ix],
+          payerKey: creator.publicKey!,
+          recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+        }).compileToV0Message();
+    
+        const tx = new VersionedTransaction(message);
+  
+
+        tx.sign([creator,proposal_account]);
+  
+
+        connection.sendTransaction(tx);
 
 
 }
@@ -280,7 +341,19 @@ export const create_assign_or_apply_for_a_role = async (
             data:Buffer.from([6])
         })
     
-        sendTransaction(role_creator,ix,[role_creator])
+        const message = new TransactionMessage({
+            instructions: [ix],
+              payerKey: role_creator.publicKey!,
+              recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+            }).compileToV0Message();
+        
+            const tx = new VersionedTransaction(message);
+      
+    
+            tx.sign([role_creator,role_application_account]);
+      
+    
+            connection.sendTransaction(tx);
 
 
 }
@@ -311,7 +384,19 @@ export const enable_or_disable_role = async (
             data:Buffer.from([10])
         })
 
-        sendTransaction(role_manager,ix,[role_manager])
+        const message = new TransactionMessage({
+            instructions: [ix],
+              payerKey: role_manager.publicKey!,
+              recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+            }).compileToV0Message();
+        
+            const tx = new VersionedTransaction(message);
+      
+    
+            tx.sign([role_manager]);
+      
+    
+            connection.sendTransaction(tx);
 
 }
 
@@ -369,7 +454,19 @@ data_version:bigint,
         data:Buffer.from(concated)
     })
 
-    sendTransaction(modifier,ix,[modifier])
+    const message = new TransactionMessage({
+        instructions: [ix],
+          payerKey: modifier.publicKey!,
+          recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+        }).compileToV0Message();
+    
+        const tx = new VersionedTransaction(message);
+  
+
+        tx.sign([modifier,proposal_account]);
+  
+
+        connection.sendTransaction(tx);
 
 }
 
@@ -438,7 +535,86 @@ export const confirm_proposal_for_creating_data = async (
         data:Buffer.from(concated)
     });
     
-    sendTransaction(creator,ix,[creator]);
+    const message = new TransactionMessage({
+        instructions: [ix],
+          payerKey: creator.publicKey!,
+          recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+        }).compileToV0Message();
+    
+        const tx = new VersionedTransaction(message);
+  
+
+        tx.sign([creator]);
+  
+
+        connection.sendTransaction(tx);
+}
+
+export const confirm_proposal_for_modifying_data = async (
+    confirmer:Keypair,
+    proposed_data_account:PublicKey,
+    proposer:PublicKey,
+    project_no:bigint,
+    hierarchy_in_the_tree:number,
+    parent_no:bigint,
+    data_no:bigint,
+    data_version:bigint,
+
+) => {
+
+
+    const data_account = PublicKey.findProgramAddressSync([
+        Buffer.from(project_no.toString()),
+        Buffer.from("hie"), Buffer.from(hierarchy_in_the_tree.toString()),
+        Buffer.from("prnt"), Buffer.from(parent_no.toString()),
+        Buffer.from("dat"), Buffer.from(data_no.toString()),
+        Buffer.from("ver"), Buffer.from(data_version.toString())
+        ],programId)
+
+    const data_config_account = PublicKey.findProgramAddressSync([
+        Buffer.from(project_no.toString()),
+        Buffer.from("dac"),
+        Buffer.from(hierarchy_in_the_tree.toString())],programId);
+
+    const new_data_version = data_version + BigInt(1);
+
+    const new_version_data_account = PublicKey.findProgramAddressSync([
+        Buffer.from(project_no.toString()),
+        Buffer.from("hie"), Buffer.from(hierarchy_in_the_tree.toString()),
+        Buffer.from("prnt"), Buffer.from(parent_no.toString()),
+        Buffer.from("dat"), Buffer.from(data_no.toString()),
+        Buffer.from("ver"), Buffer.from(new_data_version.toString())
+        ],programId)
+
+
+
+    const ix = new TransactionInstruction({
+      programId:programId,
+      keys:[
+          {isSigner:true,isWritable:true,pubkey:confirmer.publicKey},
+          {isSigner:true,isWritable:true,pubkey:proposer},
+          {isSigner:true,isWritable:true,pubkey:data_config_account[0]},
+          {isSigner:true,isWritable:true,pubkey:proposed_data_account},
+          {isSigner:true,isWritable:true,pubkey:data_account[0]},
+          {isSigner:true,isWritable:true,pubkey:new_version_data_account[0]},
+          {isSigner:false,isWritable:false,pubkey:SystemProgram.programId},
+      ],
+      data:Buffer.from([11])
+    });
+
+   const message = new TransactionMessage({
+    instructions: [ix],
+      payerKey: confirmer.publicKey!,
+      recentBlockhash : (await connection.getLatestBlockhash()).blockhash
+    }).compileToV0Message();
+
+    const tx = new VersionedTransaction(message);
+
+
+    tx.sign([confirmer]);
+
+
+    connection.sendTransaction(tx);
 }
 
 export const execute_order = async (
@@ -492,26 +668,21 @@ data_version:bigint,
         data:Buffer.from(concated)
     });
     
-    sendTransaction(executor,ix,[executor]);
-
-
-}
-
-export const sendTransaction = async (wallet:Keypair,ix:TransactionInstruction,signers:Keypair[]) => {
-
-
     const message = new TransactionMessage({
         instructions: [ix],
-          payerKey: wallet.publicKey!,
+          payerKey: executor.publicKey!,
           recentBlockhash : (await connection.getLatestBlockhash()).blockhash
         }).compileToV0Message();
     
         const tx = new VersionedTransaction(message);
   
 
-        tx.sign(signers);
+        tx.sign([executor]);
   
 
         connection.sendTransaction(tx);
-  
+
+
 }
+
+

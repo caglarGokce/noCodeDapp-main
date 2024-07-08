@@ -11,9 +11,9 @@ pub struct TheProject{
 
 #[derive(BorshSerialize, BorshDeserialize,)]
 pub struct RoleApplication{
+    pub user:[u8;32],
     pub project_no:u64,
     pub hierachy_in_the_roles:u8,
-    pub user:[u8;32],
 }
 
 #[derive(BorshSerialize, BorshDeserialize,)]
@@ -34,7 +34,7 @@ pub struct RoleConfig{
     pub time_required_to_delete:u8,
     pub time_required_until_delete:u64,
 
-    pub creation_limit_of_this_role_on_data:Vec<u8>,//vector represent on which data type(hierachy_in_the_tree) this role has limit. if empty there is no limit
+    pub creation_limit_of_this_role_on_data:Vec<u8>,//vector represent on which data type(hierarchy_in_the_tree) this role has limit. if empty there is no limit
     pub creation_limit:Vec<u64>,//the limit of creation. index of each limit is related to indexes in creation_limit_over_data. They must be the same length
 
     pub modification_limit_of_this_role_on_data:Vec<u8>,
@@ -46,7 +46,7 @@ pub struct RoleConfig{
     pub proposal_for_modification_limit_of_this_role_on_data:Vec<u8>,
     pub proposal_for_modification_limit:Vec<u64>,
 
-    //nested vector represents the order indexes in DataConfig - orders:Vec<TheOrder>. parent vector represents data types(hierachy_in_the_tree). 
+    //nested vector represents the order indexes in DataConfig - orders:Vec<TheOrder>. parent vector represents data types(hierarchy_in_the_tree). 
     //u64 represents allowed number of modification. if zero there is no limit. 
     //Prevention of modification by this role is configured in data config
     pub number_of_limit_to_execute_orders:Vec<Vec<u64>>, 

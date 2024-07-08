@@ -5,7 +5,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub struct DataConfig{
     pub project_no:u64,
     pub bump:u8,
-    pub hierachy_in_the_tree:u8,
+    pub hierarchy_in_the_tree:u8,
 
     pub who_can_create:Vec<u8>,//if empty anybody can create
     pub is_approval_by_the_creator_required_to_create:u8,//if there is a role
@@ -15,7 +15,7 @@ pub struct DataConfig{
   //pub do_not_create_until_this_time_required:u8, 
   //pub do_not_create_until_this_time:u64, 
   //pub to_whom_do_not_create_until_is_applied:Vec<u8>,
-  
+
 
     pub token_amount_needed_to_create:u64,// if not zero applied
     pub token_handled_after_creation:u8, // 1 - kept, 2 - sent, 3 - burnt
@@ -50,7 +50,6 @@ pub struct DataConfig{
     //u64 represent the limit
     pub max_number_of_order_execution:Vec<u64>,
 
-
 }
 
 
@@ -58,7 +57,7 @@ pub struct DataConfig{
 pub struct TheData{
     pub creator:[u8;32],
     pub project_no:u64,
-    pub hierachy_in_the_tree:u8,
+    pub hierarchy_in_the_tree:u8,
     pub parent_no:u64,
     pub data_no:u64,
     pub data_version:u64,

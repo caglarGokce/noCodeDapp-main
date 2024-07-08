@@ -41,10 +41,10 @@ let data_account_data: TheData = TheData::try_from_slice(&data_account.data.borr
 let clock: Clock = Clock::get()?;
 let current_time: u64 = clock.unix_timestamp as u64;
 
-let data_hierarchy_in_the_tree: u8 = parent_data.hierachy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
+let data_hierarchy_in_the_tree: u8 = parent_data.hierarchy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
 
 if parent_data.project_no != data_config.project_no {panic!()}
-if data_hierarchy_in_the_tree != data_config.hierachy_in_the_tree {panic!()}
+if data_hierarchy_in_the_tree != data_config.hierarchy_in_the_tree {panic!()}
 
 let data: TheData = TheData::try_from_slice(&proposal_account.data.borrow())?;
 
@@ -69,6 +69,97 @@ let accounts_iter: &mut std::slice::Iter<'_, AccountInfo<'_>> = &mut accounts.it
 
 
 let confirmer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+let proposer: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+let data_config_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+let proposed_data_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+let data_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+let new_version_data_account: &AccountInfo<'_> = next_account_info(accounts_iter)?;
+
+if data_config_account.owner != program_id {panic!()}
+if data_account.owner != program_id {panic!()}
+if !confirmer.is_signer{panic!()}
+
+let data_config: DataConfig = DataConfig::try_from_slice(&data_config_account.data.borrow())?;
+let the_data: TheData = TheData::try_from_slice(&data_account.data.borrow())?;
+let proposed_data: TheData = TheData::try_from_slice(&proposed_data_account.data.borrow())?;
+
+
+if the_data.hierarchy_in_the_tree != data_config.hierarchy_in_the_tree {panic!()}
+
+if the_data.hierarchy_in_the_tree != proposed_data.hierarchy_in_the_tree {panic!()}
+if the_data.parent_no != proposed_data.parent_no {panic!()}
+if the_data.data_no != proposed_data.data_no {panic!()}
+
+let confirmer_from_bytes = Pubkey::new_from_array(the_data.creator);
+let proposer_from_bytes = Pubkey::new_from_array(proposed_data.creator);
+
+if &confirmer_from_bytes != confirmer.key {panic!()}
+if &proposer_from_bytes != proposer.key {panic!()}
+
+let clock: Clock = Clock::get()?;
+let current_time: u64 = clock.unix_timestamp as u64;
+
+let data_version: u64 = the_data.data_version.checked_add(1).ok_or(ArithmeticError)?;
+
+
+let project_no: u64 = the_data.project_no;
+let data_hierarchy_in_the_tree: u8 = the_data.hierarchy_in_the_tree;
+let parent_no: u64 = the_data.parent_no;
+let data_no: u64 = the_data.data_no;
+let verison_no:u64 = 1;
+
+let seed: String = get_seed(project_no, data_hierarchy_in_the_tree, parent_no, data_no, verison_no);
+
+
+let (data_account_new_version, bump) = Pubkey::find_program_address(&[&seed.as_bytes()], program_id);
+
+let mut temp_slice: Vec<u8> =  Vec::new();
+
+the_data.serialize(&mut &mut temp_slice[..]).unwrap();
+
+let rent: Rent = Rent::default();
+let lamports: u64 = rent.minimum_balance(temp_slice.len());
+let space: u64 = temp_slice.len().try_into().unwrap();
+
+invoke_signed(&system_instruction::create_account(
+  &confirmer.key,
+  &data_account_new_version,
+  lamports, 
+  space, 
+  program_id), 
+  &[confirmer.clone(),new_version_data_account.clone()], 
+  &[&[&seed.as_bytes(), &[bump]]],
+ )?;
+
+
+let new_data: TheData = TheData{
+    creator:the_data.creator,
+    project_no:the_data.project_no,
+    hierarchy_in_the_tree:the_data.hierarchy_in_the_tree,
+    parent_no:the_data.parent_no,
+    data_no:the_data.data_no,
+    data_version:data_version,
+    last_time_data_added:the_data.last_time_data_added,
+    last_modified_on:current_time,
+    number_of_branches:the_data.number_of_branches,
+    number_of_total_proposed_data:the_data.number_of_total_proposed_data,
+    total_number_of_executions:the_data.total_number_of_executions,
+    bump,
+    data:proposed_data.data,
+    fields:proposed_data.fields,
+};
+
+let proposal_account_value: u64 = **proposed_data_account.try_borrow_lamports()?;
+
+**proposed_data_account.try_borrow_mut_lamports()? -= proposal_account_value;
+**proposer.try_borrow_mut_lamports()? += proposal_account_value;
+
+let data_account_value = **data_account.try_borrow_lamports()?;
+
+**data_account.try_borrow_mut_lamports()? -= data_account_value;
+**confirmer.try_borrow_mut_lamports()? += data_account_value;
+
+new_data.serialize(&mut &mut data_account.data.borrow_mut()[..])?;
 
 
   Ok(())
@@ -97,7 +188,7 @@ fn create_data<'info>(
  }
 
  let project_no: u64 = parent_data.project_no;
- let data_hierarchy_in_the_tree: u8 = parent_data.hierachy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
+ let data_hierarchy_in_the_tree: u8 = parent_data.hierarchy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
  let parent_no: u64 = parent_data.number_of_branches.checked_add(1).ok_or(ArithmeticError)?;
  let data_no: u64 = parent_data.data_no;
  let verison_no:u64 = 1;
@@ -110,7 +201,7 @@ fn create_data<'info>(
  let the_data: TheData = TheData{
   creator: creator.key.to_bytes(),
   project_no: project_no,
-  hierachy_in_the_tree:data_hierarchy_in_the_tree,
+  hierarchy_in_the_tree:data_hierarchy_in_the_tree,
   parent_no: parent_no,
   data_no: data_no,
   data_version: verison_no,
@@ -163,9 +254,9 @@ fn confirm_data_with_role(
   let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
 
 
-    if role_config.creation_limit_of_this_role_on_data.contains(&data_config.hierachy_in_the_tree){
+    if role_config.creation_limit_of_this_role_on_data.contains(&data_config.hierarchy_in_the_tree){
     
-      let index = role_config.creation_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierachy_in_the_tree).unwrap();
+      let index = role_config.creation_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierarchy_in_the_tree).unwrap();
 
       if role_config.creation_limit[index] <= the_role.data_created[index]{panic!()}
 

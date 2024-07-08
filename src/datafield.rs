@@ -513,16 +513,16 @@ fn execute_with_role(
   let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
 
   let execution_limit: u64 = role_config.number_of_limit_to_execute_orders
-  [data_config.hierachy_in_the_tree as usize]
+  [data_config.hierarchy_in_the_tree as usize]
   [order_no as usize] ;
 
     if execution_limit != 0{
     
 
-      if execution_limit <= the_role.number_of_orders_executed[data_config.hierachy_in_the_tree as usize][order_no as usize]{panic!()}
+      if execution_limit <= the_role.number_of_orders_executed[data_config.hierarchy_in_the_tree as usize][order_no as usize]{panic!()}
 
-      the_role.number_of_orders_executed[data_config.hierachy_in_the_tree as usize][order_no as usize]
-      = the_role.number_of_orders_executed[data_config.hierachy_in_the_tree as usize][order_no as usize].checked_add(1).ok_or(ArithmeticError)?;
+      the_role.number_of_orders_executed[data_config.hierarchy_in_the_tree as usize][order_no as usize]
+      = the_role.number_of_orders_executed[data_config.hierarchy_in_the_tree as usize][order_no as usize].checked_add(1).ok_or(ArithmeticError)?;
 
     }
 

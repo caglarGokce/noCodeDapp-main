@@ -1,4 +1,4 @@
-use crate::confirmdata::confirm_proposal_for_creating_data;
+use crate::confirmdata::{confirm_proposal_for_creating_data, confirm_proposal_for_modifying_data};
 use crate::createrole::{create_assign_or_apply_for_a_role, enable_or_disable_role};
 use crate::datafield::execute_order;
 use crate::initialize::{add_token_to_project, init_data_config, init_role_config, initialize_project_with_token, initialize_project_without_token};
@@ -57,6 +57,9 @@ fn process_instruction(
       8 => {
         confirm_proposal_for_creating_data(accounts, program_id)?;
       },
+      11 => {
+        confirm_proposal_for_modifying_data(accounts, program_id)?;
+      },
       9 => {
         let execution_data:ExecutionData  = ExecutionData::try_from_slice(&rest)?;
 
@@ -65,6 +68,7 @@ fn process_instruction(
       10 => {
         enable_or_disable_role(accounts, program_id)?;
       },
+
 
 
       /*  

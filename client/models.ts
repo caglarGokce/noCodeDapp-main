@@ -2,7 +2,7 @@
 class DataConfig {
     project_no:bigint = BigInt(0);
     bump:number = 0;
-    hierachy_in_the_tree:number = 0;
+    hierarchy_in_the_tree:number = 0;
     who_can_create:number[] = [];
     is_approval_by_the_creator_required_to_create:number = 0;
     is_confirmation_by_the_creator_required_to_create:number = 0;
@@ -27,7 +27,7 @@ class DataConfig {
     constructor(fields: {
   
         project_no:bigint,
-        hierachy_in_the_tree:number,
+        hierarchy_in_the_tree:number,
         who_can_create:number[],
         is_approval_by_the_creator_required_to_create:number,
         is_confirmation_by_the_creator_required_to_create:number,
@@ -52,7 +52,7 @@ class DataConfig {
      } | undefined = undefined)
       {if (fields) {
         this.project_no = fields.project_no;
-        this.hierachy_in_the_tree = fields.hierachy_in_the_tree;
+        this.hierarchy_in_the_tree = fields.hierarchy_in_the_tree;
         this.who_can_create = fields.who_can_create;
         this.is_approval_by_the_creator_required_to_create = fields.is_approval_by_the_creator_required_to_create;
         this.is_confirmation_by_the_creator_required_to_create = fields.is_confirmation_by_the_creator_required_to_create;
@@ -92,9 +92,9 @@ class TheOrder {
 
 class TheData {
 
-    creator:number[] = [];
+    creator:number[] = Array.from({ length: 32 }, () => 0);
     project_no:bigint = BigInt(0);
-    hierachy_in_the_tree:number = 0;
+    hierarchy_in_the_tree:number = 0;
     parent_no:bigint = BigInt(0);
     data_no:bigint = BigInt(0);
     data_version:bigint = BigInt(0);
@@ -111,7 +111,7 @@ class TheData {
   
         creator:number[],
         project_no:bigint,
-        hierachy_in_the_tree:number,
+        hierarchy_in_the_tree:number,
         parent_no:bigint,
         data_no:bigint,
         data_version:bigint,
@@ -128,7 +128,7 @@ class TheData {
       {if (fields) {
         this.creator = fields.creator
         this.project_no = fields.project_no
-        this.hierachy_in_the_tree = fields.hierachy_in_the_tree
+        this.hierarchy_in_the_tree = fields.hierarchy_in_the_tree
         this.parent_no = fields.parent_no
         this.data_no = fields.data_no
         this.data_version = fields.data_version
@@ -176,8 +176,8 @@ class DataStr {
 
 class TheProject {
     project_no:bigint = BigInt(0);
-    initializer:number[] = [];
-    token_mint:number[] = [];
+    initializer:number[] = Array.from({ length: 32 }, () => 0);
+    token_mint:number[] = Array.from({ length: 32 }, () => 0);
 
     constructor(fields: {
         project_no:bigint;
@@ -195,20 +195,20 @@ class TheProject {
   }
 
 class RoleApplication {
+    user:number[] = Array.from({ length: 32 }, () => 0);
     project_no:bigint = BigInt(0);
     hierachy_in_the_roles:number = 0;
-    user:number[] = [];
 
     constructor(fields: {
+        user:number[];
         project_no:bigint;
         hierachy_in_the_roles:number;
-        user:number[];
 
      } | undefined = undefined)
       {if (fields) {
+        this.user = fields.user
         this.project_no = fields.project_no
         this.hierachy_in_the_roles = fields.hierachy_in_the_roles
-        this.user = fields.user
 
       }
     }
@@ -291,7 +291,7 @@ class RoleConfig {
 class TheRole {
     project_no:bigint = BigInt(0);
     hierachy_in_the_roles:number = 0;
-    user:number[] = [];
+    user:number[] = Array.from({ length: 32 }, () => 0);
     created_on:bigint = BigInt(0);
     approved_to_create_data:number = 0;
     approved_to_modify_data:number = 0;
@@ -363,7 +363,7 @@ const DataConfigSchema = new Map([
         fields: [
             ["project_no","u64"],
             ["bump","u8"],
-            ["hierachy_in_the_tree","u8"],
+            ["hierarchy_in_the_tree","u8"],
             ["who_can_create",["u8"]],
             ["is_approval_by_the_creator_required_to_create","u8"],
             ["is_confirmation_by_the_creator_required_to_create","u8"],
@@ -405,7 +405,7 @@ const TheDataSchema = new Map([
         fields: [
             ['creator', ['u8',32]],
             ['project_no', 'u64'],
-            ['hierachy_in_the_tree', 'u8'],
+            ['hierarchy_in_the_tree', 'u8'],
             ['parent_no', 'u64'],
             ['data_no', 'u64'],
             ['data_version', 'u64'],
@@ -456,9 +456,9 @@ const RoleApplicationSchema = new Map([
     [RoleApplication, {
         kind: 'struct',
         fields: [
+            ['user', ['u8',32]],
             ['project_no', 'u64'],
             ['hierachy_in_the_roles', 'u8'],
-            ['user', ['u8',32]],
         ]
     }]
 ]);

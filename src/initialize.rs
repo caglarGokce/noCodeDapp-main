@@ -204,7 +204,7 @@ use spl_token_2022::extension::metadata_pointer::instruction::initialize;
 
   let mut seed_str:String = String::new();
   let project_no_str: String = project.project_no.to_string();
-  let data_hierarchy_str: String = data.hierachy_in_the_tree.to_string();
+  let data_hierarchy_str: String = data.hierarchy_in_the_tree.to_string();
   seed_str += &project_no_str;
   seed_str += &String::from("dac");
   seed_str += &data_hierarchy_str;
@@ -312,7 +312,7 @@ fn create_initial_data_account<'info> (
   let the_data: TheData = TheData{
    creator: creator.key.to_bytes(),
    project_no: project_no,
-   hierachy_in_the_tree:1,
+   hierarchy_in_the_tree:1,
    parent_no: 0,
    data_no: 1,
    data_version: 1,

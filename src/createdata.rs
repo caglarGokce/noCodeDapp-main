@@ -43,10 +43,10 @@ use solana_program::{
   let clock: Clock = Clock::get()?;
   let current_time: u64 = clock.unix_timestamp as u64;
 
-  let data_hierarchy_in_the_tree: u8 = parent_data.hierachy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
+  let data_hierarchy_in_the_tree: u8 = parent_data.hierarchy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
 
   if parent_data.project_no != data_config.project_no {panic!()}
-  if data_hierarchy_in_the_tree != data_config.hierachy_in_the_tree {panic!()}
+  if data_hierarchy_in_the_tree != data_config.hierarchy_in_the_tree {panic!()}
 
 
   if data_config.is_confirmation_by_the_creator_required_to_create == 1 {
@@ -92,7 +92,7 @@ use solana_program::{
    }
 
    let project_no: u64 = parent_data.project_no;
-   let data_hierarchy_in_the_tree: u8 = parent_data.hierachy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
+   let data_hierarchy_in_the_tree: u8 = parent_data.hierarchy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
    let parent_no: u64 = parent_data.number_of_branches.checked_add(1).ok_or(ArithmeticError)?;
    let data_no: u64 = parent_data.data_no;
    let verison_no:u64 = 1;
@@ -105,7 +105,7 @@ use solana_program::{
    let the_data: TheData = TheData{
     creator: creator.key.to_bytes(),
     project_no: project_no,
-    hierachy_in_the_tree:data_hierarchy_in_the_tree,
+    hierarchy_in_the_tree:data_hierarchy_in_the_tree,
     parent_no: parent_no,
     data_no: data_no,
     data_version: verison_no,
@@ -166,7 +166,7 @@ use solana_program::{
    }
 
    let project_no: u64 = parent_data.project_no;
-   let data_hierarchy_in_the_tree: u8 = parent_data.hierachy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
+   let data_hierarchy_in_the_tree: u8 = parent_data.hierarchy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
    let parent_no: u64 = parent_data.number_of_branches.checked_add(1).ok_or(ArithmeticError)?;
    let data_no: u64 = parent_data.data_no;
 
@@ -174,7 +174,7 @@ use solana_program::{
    let the_data: TheData = TheData{
     creator: creator.key.to_bytes(),
     project_no: project_no,
-    hierachy_in_the_tree:data_hierarchy_in_the_tree,
+    hierarchy_in_the_tree:data_hierarchy_in_the_tree,
     parent_no: parent_no,
     data_no: 0,
     data_version: 0,
@@ -225,9 +225,9 @@ use solana_program::{
     let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
 
 
-      if role_config.creation_limit_of_this_role_on_data.contains(&data_config.hierachy_in_the_tree){
+      if role_config.creation_limit_of_this_role_on_data.contains(&data_config.hierarchy_in_the_tree){
       
-        let index = role_config.creation_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierachy_in_the_tree).unwrap();
+        let index = role_config.creation_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierarchy_in_the_tree).unwrap();
   
         if role_config.creation_limit[index] <= the_role.data_created[index]{panic!()}
   
@@ -254,9 +254,9 @@ use solana_program::{
     let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
 
 
-      if role_config.proposal_for_creation_limit_of_this_role_on_data.contains(&data_config.hierachy_in_the_tree){
+      if role_config.proposal_for_creation_limit_of_this_role_on_data.contains(&data_config.hierarchy_in_the_tree){
       
-        let index = role_config.proposal_for_creation_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierachy_in_the_tree).unwrap();
+        let index = role_config.proposal_for_creation_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierarchy_in_the_tree).unwrap();
   
         if role_config.proposal_for_creation_limit[index] <= the_role.data_proposed_to_create[index]{panic!()}
   

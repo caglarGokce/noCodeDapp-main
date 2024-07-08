@@ -43,7 +43,7 @@ pub fn  modify_or_propose_modification_data(
 
 
   if the_data.project_no != data_config.project_no {panic!()}
-  if the_data.hierachy_in_the_tree != data_config.hierachy_in_the_tree {panic!()}
+  if the_data.hierarchy_in_the_tree != data_config.hierarchy_in_the_tree {panic!()}
 
 
   if data_config.is_confirmation_by_the_creator_required_to_modify == 1 {
@@ -83,7 +83,7 @@ pub fn  modify_or_propose_modification_data(
    }
 
    let project_no: u64 = the_data.project_no;
-   let data_hierarchy_in_the_tree: u8 = the_data.hierachy_in_the_tree;
+   let data_hierarchy_in_the_tree: u8 = the_data.hierarchy_in_the_tree;
    let parent_no: u64 = the_data.parent_no;
    let data_no: u64 = the_data.data_no;
    let version_no:u64 = the_data.data_version.checked_add(1).ok_or(ArithmeticError)?;
@@ -98,7 +98,7 @@ pub fn  modify_or_propose_modification_data(
    let data: TheData = TheData{
     creator: modifier.key.to_bytes(),
     project_no: the_data.project_no,
-    hierachy_in_the_tree:the_data.hierachy_in_the_tree,
+    hierarchy_in_the_tree:the_data.hierarchy_in_the_tree,
     parent_no: the_data.parent_no,
     data_no:the_data.data_no,
     data_version: version_no,
@@ -132,20 +132,21 @@ pub fn  modify_or_propose_modification_data(
    )?;
 
 
+
    data.serialize(&mut &mut data_account.data.borrow_mut()[..])?;
 
     Ok(())
   }
 
   fn propose_modifying_data<'info>(
-    creator:&AccountInfo<'info>,
+    modifier:&AccountInfo<'info>,
     proposal_account:&AccountInfo<'info>,
-    parent_data_account:&AccountInfo<'info>,
+    data_account:&AccountInfo<'info>,
     role_account:&AccountInfo<'info>,
     role_config_account:&AccountInfo<'info>,
     program_id:&Pubkey,
     data_config:&DataConfig,
-    mut parent_data:TheData,
+    mut the_data:TheData,
     current_time:u64,
     data:DataStr
   ) -> ProgramResult {
@@ -155,18 +156,19 @@ pub fn  modify_or_propose_modification_data(
     propose_modifying_data_with_role(role_account,role_config_account,data_config,&current_time)?;
    }
 
-   let project_no: u64 = parent_data.project_no;
-   let data_hierarchy_in_the_tree: u8 = parent_data.hierachy_in_the_tree.checked_add(1).ok_or(ArithmeticError)?;
-   let parent_no: u64 = parent_data.number_of_branches.checked_add(1).ok_or(ArithmeticError)?;
-   let data_no: u64 = parent_data.data_no;
+   let project_no: u64 = the_data.project_no;
+   let hierarchy_in_the_tree: u8 = the_data.hierarchy_in_the_tree;
+   let number_of_total_proposed_data: u64 = the_data.number_of_total_proposed_data.checked_add(1).ok_or(ArithmeticError)?;
+   let parent_no: u64 = the_data.parent_no;
+   let data_no: u64 = the_data.data_no;
+   
 
-
-   let the_data: TheData = TheData{
-    creator: creator.key.to_bytes(),
-    project_no: project_no,
-    hierachy_in_the_tree:data_hierarchy_in_the_tree,
-    parent_no: parent_no,
-    data_no: 0,
+   let proposed_data: TheData = TheData{
+    creator: modifier.key.to_bytes(),
+    project_no,
+    hierarchy_in_the_tree,
+    parent_no,
+    data_no,
     data_version: 0,
     last_time_data_added: current_time,
     last_modified_on: current_time,
@@ -188,18 +190,18 @@ pub fn  modify_or_propose_modification_data(
 
 
    invoke(&system_instruction::create_account(
-    creator.key,
+    modifier.key,
     &proposal_account.key,
     lamports, 
     space, 
     program_id), 
-    &[creator.clone(),proposal_account.clone()], 
+    &[modifier.clone(),proposal_account.clone()], 
    )?;
 
-   parent_data.number_of_total_proposed_data = data_no;
+   the_data.number_of_total_proposed_data = number_of_total_proposed_data;
 
-   parent_data.serialize(&mut &mut parent_data_account.data.borrow_mut()[..])?;
-   the_data.serialize(&mut &mut proposal_account.data.borrow_mut()[..])?;
+   the_data.serialize(&mut &mut data_account.data.borrow_mut()[..])?;
+   proposed_data.serialize(&mut &mut proposal_account.data.borrow_mut()[..])?;
 
     Ok(())
   }
@@ -215,9 +217,9 @@ pub fn  modify_or_propose_modification_data(
     let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
 
 
-      if role_config.modification_limit_of_this_role_on_data.contains(&data_config.hierachy_in_the_tree){
+      if role_config.modification_limit_of_this_role_on_data.contains(&data_config.hierarchy_in_the_tree){
       
-        let index = role_config.modification_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierachy_in_the_tree).unwrap();
+        let index = role_config.modification_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierarchy_in_the_tree).unwrap();
   
         if role_config.modification_limit[index] <= the_role.data_modified[index]{panic!()}
   
@@ -244,9 +246,9 @@ pub fn  modify_or_propose_modification_data(
     let role_config: RoleConfig = RoleConfig::try_from_slice(&role_config_account.data.borrow())?;
 
 
-      if role_config.proposal_for_modification_limit_of_this_role_on_data.contains(&data_config.hierachy_in_the_tree){
+      if role_config.proposal_for_modification_limit_of_this_role_on_data.contains(&data_config.hierarchy_in_the_tree){
       
-        let index = role_config.proposal_for_modification_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierachy_in_the_tree).unwrap();
+        let index = role_config.proposal_for_modification_limit_of_this_role_on_data.iter().position(|&x| x == data_config.hierarchy_in_the_tree).unwrap();
   
         if role_config.proposal_for_modification_limit[index] <= the_role.data_proposed_to_modify[index]{panic!()}
   
