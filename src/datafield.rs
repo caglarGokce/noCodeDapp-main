@@ -390,7 +390,7 @@ use solana_program::{
 
     loop {
 
-      if execution_order.order[director as usize] < 11 {
+      if execution_order.order[director as usize] < 7 {
   
         let order: ExeOrder = create_order_with_condition(
           execution_order.order[director as usize],execution_order.order[(director+1) as usize],
@@ -400,7 +400,7 @@ use solana_program::{
         );
   
         orders.push(order);
-        director += 6;
+        director += 7;
   
       }else{
         
@@ -409,10 +409,10 @@ use solana_program::{
         execution_order.order[(director+2) as usize],execution_order.order[(director+3) as usize],);
         
         orders.push(order);
-        director += 3;
+        director += 4;
       
       }
-  
+
       if director == order_len  {
           break; 
       }

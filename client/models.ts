@@ -26,28 +26,28 @@ class DataConfig {
   
     constructor(fields: {
   
-        project_no:bigint,
-        hierarchy_in_the_tree:number,
-        who_can_create:number[],
-        is_approval_by_the_creator_required_to_create:number,
-        is_confirmation_by_the_creator_required_to_create:number,
-        how_frequent_data_can_be_created:bigint,
-        token_amount_needed_to_create:bigint,
-        token_handled_after_creation:number,
-        who_can_modify:number[],
-        is_approval_by_the_creator_required_to_modify:number,
-        is_confirmation_by_the_creator_required_to_modify:number,
-        how_frequent_data_can_be_modified:bigint,
-        token_amount_needed_to_modify:bigint,
-        token_handled_after_modification:number,
-        number_of_max_branches:bigint,
-        number_of_max_versions:bigint,
-        constanst:bigint[],
-        initial_field_values:bigint[],
-        orders:TheOrder[],
-        who_can_execute_orders:number[][],
-        max_number_of_order_execution:bigint[],
-        bump:number,
+        project_no:bigint;
+        hierarchy_in_the_tree:number;
+        who_can_create:number[];
+        is_approval_by_the_creator_required_to_create:number;
+        is_confirmation_by_the_creator_required_to_create:number;
+        how_frequent_data_can_be_created:bigint;
+        token_amount_needed_to_create:bigint;
+        token_handled_after_creation:number;
+        who_can_modify:number[];
+        is_approval_by_the_creator_required_to_modify:number;
+        is_confirmation_by_the_creator_required_to_modify:number;
+        how_frequent_data_can_be_modified:bigint;
+        token_amount_needed_to_modify:bigint;
+        token_handled_after_modification:number;
+        number_of_max_branches:bigint;
+        number_of_max_versions:bigint;
+        constanst:bigint[];
+        initial_field_values:bigint[];
+        orders:TheOrder[];
+        who_can_execute_orders:number[][];
+        max_number_of_order_execution:bigint[];
+        bump:number;
   
      } | undefined = undefined)
       {if (fields) {
@@ -357,7 +357,7 @@ class Counter {
   }
 
 const DataConfigSchema = new Map([
-    [RoleConfig,
+    [DataConfig,
       {
         kind: "struct",
         fields: [

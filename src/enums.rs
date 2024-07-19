@@ -11,9 +11,9 @@ pub enum TheConditions{
   IsEqual{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//1
   IsEqualNot{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//2
   IsBigger{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//3
-  IsSmaller{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//5
-  IsBiggerEqual{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//7
-  IsSmallerEqual{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//9
+  IsSmaller{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//4
+  IsBiggerEqual{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//5
+  IsSmallerEqual{compare_1:TheSubjects,compare_2:TheSubjects,operation:TheOperation},//6
 }
 
 #[derive(Clone)]
@@ -29,3 +29,4 @@ pub enum ExeOrder{
   WithCondition{condition:TheConditions},
   WithoutCondition{operation:TheOperation},
 }
+
