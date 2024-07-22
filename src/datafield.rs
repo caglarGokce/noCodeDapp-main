@@ -9,7 +9,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
  account_info::{next_account_info, AccountInfo},
  entrypoint::ProgramResult, 
- pubkey::Pubkey, sysvar::{clock::Clock, Sysvar,},
+ pubkey::Pubkey, 
 
 };
 
@@ -43,15 +43,14 @@ use solana_program::{
 
   if total_number_of_executions >= max_number_of_order_execution{panic!()}
 
-  let clock: Clock = Clock::get()?;
-  let current_time: u64 = clock.unix_timestamp as u64;
+
 
   if data_config.who_can_execute_orders[execution_data.order_no as usize].len() != 0{
 
     let the_role: TheRole = TheRole::try_from_slice(&executor_role_account.data.borrow())?;
 
     if data_config.who_can_execute_orders[execution_data.order_no as usize].contains(&the_role.hierachy_in_the_roles){
-      execute_with_role(executor_role_account, executor_role_config_account, &data_config, &current_time, execution_data.order_no)?;
+      execute_with_role(executor_role_account, executor_role_config_account, &data_config, execution_data.order_no)?;
     }else{
       panic!()
     }
@@ -505,7 +504,6 @@ fn execute_with_role(
   role_account:&AccountInfo,
   role_config_account:&AccountInfo,
   data_config:&DataConfig,
-  current_time:&u64,
   order_no:u8
 ) -> ProgramResult {
 
@@ -527,7 +525,7 @@ fn execute_with_role(
     }
 
 
-    is_role_valid(&the_role, &role_config, data_config, current_time)?;
+    is_role_valid(&the_role, &role_config, data_config)?;
 
     the_role.serialize(&mut &mut role_account.data.borrow_mut()[..])?;
 
@@ -539,7 +537,6 @@ fn is_role_valid(
   the_role:&TheRole,
   role_config:&RoleConfig,
   data_config:&DataConfig,
-  current_time:&u64
 ) -> ProgramResult {
 
 
@@ -555,12 +552,7 @@ fn is_role_valid(
       if the_role.approved_to_create_data != 1 {panic!()}
   }
 
-  if role_config.time_required_to_create != 0 {
 
-      let time_passed: u64 = current_time - the_role.last_time_created_data;
-
-      if time_passed < role_config.time_required_until_creation{panic!()}
-  }
 
 
   Ok(())
